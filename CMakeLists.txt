@@ -13,7 +13,7 @@ SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 
 FIND_PACKAGE(OpenCV REQUIRED)
 
-# NOTE: Please specify path to sourc code of Eigen library manually.
+# NOTE: Please specify path to source code of Eigen library manually.
 INCLUDE_DIRECTORIES(
   ${PROJECT_SOURCE_DIR}/include
   ${EIGEN_SOURCE_DIR}
