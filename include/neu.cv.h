@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-Last update: 2022-01-14 15:09
+Last update: 2022-03-21 10:16
 Version: V0.1.0
 ******************************************************************************/
 #ifndef NEU_CV_H
@@ -53,9 +53,9 @@ public:
 
   virtual T Filter(const T &measurement, const T &control = T()) = 0;
 
-  virtual T Predict(const T &control = T()) = 0;
+  virtual T Peek(const unsigned int &steps, const T &control = T()) = 0;
 
-  virtual T PredictForward(const unsigned int &steps, const T &control = T()) = 0;
+  virtual T Predict(const T &control = T()) = 0;
 
   virtual void Reset(
       const int &state_dimension, const int &measurement_dimension,
@@ -106,10 +106,9 @@ public:
   MatrixXT Filter(
       const MatrixXT &measurement, const MatrixXT &control = MatrixXT());
 
-  MatrixXT Predict(const MatrixXT &control = MatrixXT());
+  MatrixXT Peek(const unsigned int &steps, const MatrixXT &control = MatrixXT());
 
-  MatrixXT PredictForward(
-      const unsigned int &steps, const MatrixXT &control = MatrixXT());
+  MatrixXT Predict(const MatrixXT &control = MatrixXT());
 
   void Reset(
       const int &state_dimension, const int &measurement_dimension,
@@ -174,8 +173,7 @@ public:
 
   cv::Mat Predict(const cv::Mat &control = cv::Mat());
 
-  cv::Mat PredictForward(
-      const unsigned int &steps, const cv::Mat &control = cv::Mat());
+  cv::Mat Peek(const unsigned int &steps, const cv::Mat &control = cv::Mat());
 
   void Reset(
       const int &state_dimension, const int &measurement_dimension,
@@ -301,8 +299,7 @@ NKalmanFilterEigen<T>::Predict(const MatrixXT &control)
 
 template <class T>
 Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>
-NKalmanFilterEigen<T>::PredictForward(
-    const unsigned int &steps, const MatrixXT &control)
+NKalmanFilterEigen<T>::Peek(const unsigned int &steps, const MatrixXT &control)
 {
   NKalmanFilterEigen<T> kf = *this;
 
@@ -572,7 +569,7 @@ inline cv::Mat NKalmanFilterOpenCV::Predict(const cv::Mat &control)
   return this->m_kf.statePre;
 }
 
-inline cv::Mat NKalmanFilterOpenCV::PredictForward(
+inline cv::Mat NKalmanFilterOpenCV::Peek(
     const unsigned int &steps, const cv::Mat &control)
 {
   cv::KalmanFilter kf = this->m_kf;
