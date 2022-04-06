@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-Last update: 2022-03-21 18:46
+Last update: 2022-04-06 10:10
 ****************************************************************************"""
 
 #!/usr/bin/env python3
@@ -36,17 +36,13 @@ import numpy as np
 
 #============================================================ NLowPassFilter{{{
 class NLowPassFilter(object):
-    def __init__(self, measurement_d: tuple = (1, 1), alpha = 0.0):
+    def __init__(self, alpha = 0.0):
         super(NLowPassFilter, self).__init__()
 
-        if measurement_d == (1, 1):
-            self._hatxprev = 0.0
-            self._hatx = 0.0
-        else:
-            self._hatxprev = np.zeros(measurement_d, dtype=np.float32)
-            self._hatx = np.zeros(measurement_d, dtype=np.float32)
+        self._hatxprev = None
+        self._hatx = None
 
-        self.reset(measurement_d, alpha)
+        self.reset(alpha)
 
     def filter(self, x, alpha=None):
         if alpha is not None and np.all((alpha > 0.0) & (alpha <= 1.0)):
@@ -64,22 +60,23 @@ class NLowPassFilter(object):
     def last_value(self):
         return self._hatxprev
 
-    def reset(self, measurement_d: tuple, alpha):
+    def reset(self, alpha=None):
         assert np.all((alpha > 0.0) & (alpha <= 1.0)), \
                 "alpha ({}) must be in (0.0, 1.0].".format(alpha)
-        self._measurement_d = measurement_d
-        self._alpha = alpha
+
+        if alpha is not None:
+            self._alpha = alpha
+
         self._initialized = False
 #}}}
 
 #============================================================ NOneEuroFilter{{{
 class NOneEuroFilter(object):
-    def __init__(self, frequency: float, measurement_d: tuple = (1, 1),
-        beta: float=0.0, mincutoff: float=1.0, dcutoff: float=1.0):
+    def __init__(self, frequency: float, beta: float=0.0, mincutoff: float=1.0, dcutoff: float=1.0):
         super(NOneEuroFilter, self).__init__()
 
         self._timestamp = None
-        self.reset(frequency, measurement_d, beta, mincutoff, dcutoff)
+        self.reset(frequency, beta, mincutoff, dcutoff)
 
     def filter(self, x, timestamp=None):
         if self._timestamp and timestamp:
@@ -96,10 +93,12 @@ class NOneEuroFilter(object):
         cutoff = self._mincutoff + self._beta * np.absolute(edx)
         return self._x.filter(x, self._get_alpha(cutoff))
 
-    def reset(self, frequency: float, measurement_d: tuple, beta: float,
-            mincutoff: float, dcutoff: float):
+    def reset(self, frequency: float, beta: float, mincutoff: float, dcutoff: float):
         assert frequency >= 0.0, \
                 "frequency ({}) must be larger than 0.0.".format(frequency)
+
+        assert beta >= 0.0, \
+                "beta ({}) must be larger than 0.0.".format(beta)
 
         assert mincutoff >= 0.0, \
                 "mincutoff ({}) must be larger than 0.0.".format(mincutoff)
@@ -113,8 +112,8 @@ class NOneEuroFilter(object):
         self._beta = beta
         self._mincutoff = mincutoff
         self._dcutoff = dcutoff
-        self._x = NLowPassFilter(measurement_d, self._get_alpha(mincutoff))
-        self._dx = NLowPassFilter(measurement_d, self._get_alpha(dcutoff))
+        self._x = NLowPassFilter(self._get_alpha(mincutoff))
+        self._dx = NLowPassFilter(self._get_alpha(dcutoff))
 
     def _get_alpha(self, cutoff):
         tau = 1.0 / (2.0 * np.pi * cutoff)
