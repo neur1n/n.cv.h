@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-Last update: 2022-04-06 10:10
+Last update: 2022-04-07 14:38
 ****************************************************************************"""
 
 #!/usr/bin/env python3
@@ -93,27 +93,30 @@ class NOneEuroFilter(object):
         cutoff = self._mincutoff + self._beta * np.absolute(edx)
         return self._x.filter(x, self._get_alpha(cutoff))
 
-    def reset(self, frequency: float, beta: float, mincutoff: float, dcutoff: float):
-        assert frequency >= 0.0, \
-                "frequency ({}) must be larger than 0.0.".format(frequency)
-
-        assert beta >= 0.0, \
-                "beta ({}) must be larger than 0.0.".format(beta)
-
-        assert mincutoff >= 0.0, \
-                "mincutoff ({}) must be larger than 0.0.".format(mincutoff)
-
-        assert dcutoff >= 0.0, \
-                "dcutoff ({}) must be larger than 0.0.".format(dcutoff)
-
+    def reset(self, frequency=None, beta=None, mincutoff=None, dcutoff=None):
         self._initialized = False
 
-        self._frequency = frequency
-        self._beta = beta
-        self._mincutoff = mincutoff
-        self._dcutoff = dcutoff
-        self._x = NLowPassFilter(self._get_alpha(mincutoff))
-        self._dx = NLowPassFilter(self._get_alpha(dcutoff))
+        if frequency is not None:
+            assert frequency >= 0.0, \
+                    "frequency ({}) must be larger than 0.0.".format(frequency)
+            self._frequency = frequency
+
+        if beta is not None:
+            assert beta >= 0.0, \
+                    "beta ({}) must be larger than 0.0.".format(beta)
+            self._beta = beta
+
+        if mincutoff is not None:
+            assert mincutoff >= 0.0, \
+                    "mincutoff ({}) must be larger than 0.0.".format(mincutoff)
+            self._mincutoff = mincutoff
+            self._x = NLowPassFilter(self._get_alpha(mincutoff))
+
+        if dcutoff is not None:
+            assert dcutoff >= 0.0, \
+                    "dcutoff ({}) must be larger than 0.0.".format(dcutoff)
+            self._dcutoff = dcutoff
+            self._dx = NLowPassFilter(self._get_alpha(dcutoff))
 
     def _get_alpha(self, cutoff):
         tau = 1.0 / (2.0 * np.pi * cutoff)
