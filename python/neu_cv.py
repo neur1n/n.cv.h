@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-Last update: 2022-04-07 14:38
+Last update: 2022-04-13 18:42
 ****************************************************************************"""
 
 #!/usr/bin/env python3
@@ -61,10 +61,9 @@ class NLowPassFilter(object):
         return self._hatxprev
 
     def reset(self, alpha=None):
-        assert np.all((alpha > 0.0) & (alpha <= 1.0)), \
-                "alpha ({}) must be in (0.0, 1.0].".format(alpha)
-
         if alpha is not None:
+            assert np.all((alpha > 0.0) & (alpha <= 1.0)), \
+                    "'alpha' ({}) must be in (0.0, 1.0].".format(alpha)
             self._alpha = alpha
 
         self._initialized = False
@@ -98,23 +97,23 @@ class NOneEuroFilter(object):
 
         if frequency is not None:
             assert frequency >= 0.0, \
-                    "frequency ({}) must be larger than 0.0.".format(frequency)
+                    "'frequency' ({}) must be larger than 0.0.".format(frequency)
             self._frequency = frequency
 
         if beta is not None:
             assert beta >= 0.0, \
-                    "beta ({}) must be larger than 0.0.".format(beta)
+                    "'beta' ({}) must be larger than 0.0.".format(beta)
             self._beta = beta
 
         if mincutoff is not None:
             assert mincutoff >= 0.0, \
-                    "mincutoff ({}) must be larger than 0.0.".format(mincutoff)
+                    "'mincutoff' ({}) must be larger than 0.0.".format(mincutoff)
             self._mincutoff = mincutoff
             self._x = NLowPassFilter(self._get_alpha(mincutoff))
 
         if dcutoff is not None:
             assert dcutoff >= 0.0, \
-                    "dcutoff ({}) must be larger than 0.0.".format(dcutoff)
+                    "'dcutoff' ({}) must be larger than 0.0.".format(dcutoff)
             self._dcutoff = dcutoff
             self._dx = NLowPassFilter(self._get_alpha(dcutoff))
 
@@ -153,17 +152,20 @@ class NKalmanFilter(object):
         self.predict(control)
         return self.correct(measurement)
 
-    def peek(self, steps: int = 1, control=None):
+    def peek(self, steps: int = 1, control=None) -> np.ndarray:
+        assert steps >= 1, "'steps' ({}) must be at least 1.".format(steps)
+
         self._save_state()
 
-        for i in range(steps):
-            self._kf.predict(control)
+        results = np.zeros((steps, self._measurement_d, 1))
 
-        result = copy.deepcopy(self._kf.statePre[0:self._measurement_d])
+        for i in range(steps):
+            p = self._kf.predict(control)
+            results[i] = copy.deepcopy(p[0:self._measurement_d])
 
         self._load_state()
 
-        return result
+        return results
 
     def predict(self, control = None) -> np.ndarray:
         self._kf.predict(control)
@@ -172,7 +174,8 @@ class NKalmanFilter(object):
     def reset(self, state_d, measurement_d, control_d = None,
             r_scale = None, q_scale = None):
         assert state_d > 0 and measurement_d > 0, \
-                "Dimensions of state and measurement must be positive."
+                "Dimensions of state ({}) and measurement ({}) must be positive." \
+                .format(state_d, measurement_d)
 
         self._initialized = False
 
