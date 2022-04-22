@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-Last update: 2022-04-13 18:42
+Last update: 2022-04-21 17:56
 ****************************************************************************"""
 
 #!/usr/bin/env python3
@@ -36,48 +36,56 @@ import numpy as np
 
 #============================================================ NLowPassFilter{{{
 class NLowPassFilter(object):
-    def __init__(self, alpha = 0.0):
+    def __init__(self, alpha = None):
         super(NLowPassFilter, self).__init__()
 
+        self._alpha = None
         self._hatxprev = None
-        self._hatx = None
-
         self.reset(alpha)
 
-    def filter(self, x, alpha=None):
+    def filter(self, x, alpha = None):
         if alpha is not None and np.all((alpha > 0.0) & (alpha <= 1.0)):
             self._alpha = alpha
 
+        assert self._alpha is not None, \
+                "'alpha' cannot be None since the internal alpha is not initialized."
+
         if not self._initialized:
+            hatx = x
             self._hatxprev = x
             self._initialized = True
+        else:
+            hatx = self._alpha * x + (1.0 - self._alpha) * self._hatxprev
+            self._hatxprev = hatx
 
-        self._hatx = self._alpha * x + (1.0 - self._alpha) * self._hatxprev
-        self._hatxprev = self._hatx
-
-        return self._hatx
+        return hatx
 
     def last_value(self):
         return self._hatxprev
 
-    def reset(self, alpha=None):
+    def reset(self, alpha = None):
+        self.set_alpha(alpha)
+        self._initialized = False
+
+    def set_alpha(self, alpha):
         if alpha is not None:
             assert np.all((alpha > 0.0) & (alpha <= 1.0)), \
                     "'alpha' ({}) must be in (0.0, 1.0].".format(alpha)
             self._alpha = alpha
-
-        self._initialized = False
 #}}}
 
 #============================================================ NOneEuroFilter{{{
 class NOneEuroFilter(object):
-    def __init__(self, frequency: float, beta: float=0.0, mincutoff: float=1.0, dcutoff: float=1.0):
+    def __init__(self, frequency: float, beta: float = 0.0,
+        mincutoff: float = 1.0, dcutoff: float = 1.0):
         super(NOneEuroFilter, self).__init__()
 
         self._timestamp = None
+        self._lpf = NLowPassFilter()
+        self._dlpf = NLowPassFilter()
         self.reset(frequency, beta, mincutoff, dcutoff)
 
-    def filter(self, x, timestamp=None):
+    def filter(self, x, timestamp = None):
         if self._timestamp and timestamp:
             self._frequency = 1.0 / (timestamp - self._timestamp)
         self._timestamp = timestamp
@@ -86,13 +94,13 @@ class NOneEuroFilter(object):
             dx = 0.0
             self._initialized = True
         else:
-            dx = (x - self._x.last_value()) * self._frequency
+            dx = (x - self._lpf.last_value()) * self._frequency
 
-        edx = self._dx.filter(dx)
+        edx = self._dlpf.filter(dx)
         cutoff = self._mincutoff + self._beta * np.absolute(edx)
-        return self._x.filter(x, self._get_alpha(cutoff))
+        return self._lpf.filter(x, self._update_alpha(cutoff))
 
-    def reset(self, frequency=None, beta=None, mincutoff=None, dcutoff=None):
+    def reset(self, frequency = None, beta = None, mincutoff = None, dcutoff = None):
         self._initialized = False
 
         if frequency is not None:
@@ -109,15 +117,15 @@ class NOneEuroFilter(object):
             assert mincutoff >= 0.0, \
                     "'mincutoff' ({}) must be larger than 0.0.".format(mincutoff)
             self._mincutoff = mincutoff
-            self._x = NLowPassFilter(self._get_alpha(mincutoff))
+            self._lpf.set_alpha(self._update_alpha(mincutoff))
 
         if dcutoff is not None:
             assert dcutoff >= 0.0, \
                     "'dcutoff' ({}) must be larger than 0.0.".format(dcutoff)
             self._dcutoff = dcutoff
-            self._dx = NLowPassFilter(self._get_alpha(dcutoff))
+            self._dlpf.set_alpha(self._update_alpha(dcutoff))
 
-    def _get_alpha(self, cutoff):
+    def _update_alpha(self, cutoff):
         tau = 1.0 / (2.0 * np.pi * cutoff)
         return 1.0 / (1.0 + tau * self._frequency)
 #}}}
@@ -152,7 +160,7 @@ class NKalmanFilter(object):
         self.predict(control)
         return self.correct(measurement)
 
-    def peek(self, steps: int = 1, control=None) -> np.ndarray:
+    def peek(self, steps: int = 1, control = None) -> np.ndarray:
         assert steps >= 1, "'steps' ({}) must be at least 1.".format(steps)
 
         self._save_state()
@@ -251,7 +259,8 @@ class NKalmanFilter(object):
             mr = measurement.shape[0]
             mc = 1
 
-            assert mr <= self._kf.statePost.shape[0] and mc <= self._kf.statePost.shape[1], \
+            assert mr <= self._kf.statePost.shape[0] \
+                    and mc <= self._kf.statePost.shape[1], \
                     "Measurement {}x{} has a bigger size than state ({})." \
                     .format(mr, mc, self._kf.statePost.shape)
 
