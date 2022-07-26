@@ -1,26 +1,17 @@
 """****************************************************************************
-MIT License
-
-Copyright (c) 2022 Jihang Li (jihangli AT duck DOT com)
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+Copyright (c) 2022 Jihang Li
+neu_cv.py is licensed under Mulan PSL v2.
+You can use this software according to the terms and conditions of the Mulan
+PSL v2.
+You may obtain a copy of Mulan PSL v2 at:
+         http://license.coscl.org.cn/MulanPSL2
+THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
+EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
+MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
+See the Mulan PSL v2 for more details.
 
 
-Last update: 2022-04-21 17:56
+Last update: 2022-07-11 18:29
 ****************************************************************************"""
 
 #!/usr/bin/env python3
@@ -132,8 +123,9 @@ class NOneEuroFilter(object):
 
 #============================================================= NKalmanFilter{{{
 class NKalmanFilter(object):
-    def __init__(self, state_d, measurement_d, control_d = None,
-            r_scale = 1.0, q_scale = 1.0):
+    def __init__(self,
+        state_d, measurement_d, control_d = None,
+        r_scale: float = 1.0, q_scale: float = 1.0, dtype: int = 32):
         super(NKalmanFilter, self).__init__()
 
         self._kf: cv2.KalmanFilter = None
@@ -144,8 +136,9 @@ class NKalmanFilter(object):
         self._measurement_d = measurement_d
         self._r_scale = r_scale
         self._q_scale = q_scale
+        self._type = {"cv": cv2.CV_32F, "py": 32}
 
-        self.reset(state_d, measurement_d, control_d, r_scale, q_scale)
+        self.reset(state_d, measurement_d, control_d, r_scale, q_scale, dtype)
 
     def correct(self, measurement: np.ndarray) -> np.ndarray:
         self._kf.correct(measurement)
@@ -180,17 +173,24 @@ class NKalmanFilter(object):
         return self._kf.statePre[0:self._measurement_d]
 
     def reset(self, state_d, measurement_d, control_d = None,
-            r_scale = None, q_scale = None):
+            r_scale = None, q_scale = None, dtype = None):
         assert state_d > 0 and measurement_d > 0, \
                 "Dimensions of state ({}) and measurement ({}) must be positive." \
                 .format(state_d, measurement_d)
 
         self._initialized = False
 
-        self._kf = cv2.KalmanFilter(state_d, measurement_d, control_d)
+        if dtype is not None:
+            if dtype == 32:
+                self._type["cv"] = cv2.CV_32F
+                self._type["py"] = np.float32
+            else:
+                self._type["cv"] = cv2.CV_64F
+                self._type["py"] = np.float64
+        self._kf = cv2.KalmanFilter(state_d, measurement_d, control_d, self._type["cv"])
 
         self._kf.measurementMatrix = \
-                np.eye(measurement_d, state_d, dtype=np.float32)
+                np.eye(measurement_d, state_d, dtype=self._type["py"])
 
         if r_scale is not None:
             self._r_scale = r_scale
@@ -199,9 +199,9 @@ class NKalmanFilter(object):
             self._q_scale = q_scale
 
         self._kf.measurementNoiseCov = \
-                np.eye(measurement_d, dtype=np.float32) * self._r_scale
+                np.eye(measurement_d, dtype=self._type["py"]) * self._r_scale
         self._kf.processNoiseCov = \
-                np.eye(self._state_d, self._state_d, dtype=np.float32) * self._q_scale
+                np.eye(self._state_d, self._state_d, dtype=self._type["py"]) * self._q_scale
 
     def get_control_matrix(self) -> np.ndarray:
         return self._kf.controlMatrix
@@ -245,7 +245,7 @@ class NKalmanFilter(object):
         self._kf.statePost = self._state["state_post"]
 
     def _measurement_to_state(self, measurement: np.ndarray) -> np.ndarray:
-        state = np.zeros(self._kf.statePost.shape, dtype=np.float32)
+        state = np.zeros(self._kf.statePost.shape, dtype=self._type["py"])
 
         if measurement.ndim > 1:
             mr, mc = measurement.shape
