@@ -1,6 +1,6 @@
 .cache/
 .vs/
 bin/
-*build/
+build/
 
 compile_commands.json

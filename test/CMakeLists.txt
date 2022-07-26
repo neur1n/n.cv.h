@@ -1,4 +1,4 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 3.18 FATAL_ERROR)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.18)
 PROJECT(neu.cv.h)
 
 ADD_DEFINITIONS(-DNEUCVH_USE_EIGEN)
@@ -11,14 +11,21 @@ SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 
+# NOTE: Please specify path to Eigen and/or OpenCV manually, e.g.:
+#
+#    SET(OpenCV_DIR "path/to/dir/containing/OpenCVConfig.cmake")
+#    SET(EIGEN_SOURCE_DIR "path/to/root/of/eigen/source")
+
 FIND_PACKAGE(OpenCV REQUIRED)
 
-# NOTE: Please specify path to source code of Eigen library manually.
 INCLUDE_DIRECTORIES(
-  ${PROJECT_SOURCE_DIR}/include
+  ${PROJECT_SOURCE_DIR}/cpp
   ${EIGEN_SOURCE_DIR}
   ${OpenCV_INCLUDE_DIRS}
 )
 
 ADD_EXECUTABLE(test_kalmanfilter ${PROJECT_SOURCE_DIR}/test/test_kalmanfilter.cpp)
 TARGET_LINK_LIBRARIES(test_kalmanfilter ${OpenCV_LIBS})
+
+ADD_EXECUTABLE(test_oneeurofilter ${PROJECT_SOURCE_DIR}/test/test_oneeurofilter.cpp)
+TARGET_LINK_LIBRARIES(test_oneeurofilter ${OpenCV_LIBS})
