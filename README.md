@@ -45,13 +45,12 @@
 ### Prerequisites
 These are tested prerequisites, they might be not mandatory:
 - C++ compiler: >= C++11
-- CMake: >= 3.18
-- Eigen: >= 3.3.7
+- Eigen (optional): >= 3.3.7
 
 
 ### Installation
-This library contains only one header, `neu.cv.h`. For end users, it is
-recommended to grab the file and drop it into your project. For contributors,
+For end users, it is recommended to grab the file ('neu.cv.h' for C++,
+'neu_cv.py' for Python) and drop it into your project. For contributors,
 you may want to clone the entire repository for testing purpose:
 
 ```bash
@@ -71,7 +70,7 @@ INCLUDE_DIRECTORIES(
 ```
 
 Additionally, add some dependency configurations required by `neu.cv.h` to
-`CMakeLists.txt` (you may refer to the `CMakeLists.txt` in this repository).
+`CMakeLists.txt` (you may refer to the `test/CMakeLists.txt` in this repository).
 
 
 <!----------------------------------------------------------- DOCUMENTATION -->
