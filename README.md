@@ -1,10 +1,10 @@
 <!------------------------------------------------------------------ HEADER -->
 <pre align="center">
-  ▄▀▀▀▀▄▀▀▄ █▀▀▀▀▀▀▀█ █▀▀▀█▀▀▀█    ▄▀▀▀▀▀▀▀▄ █▀▀▀█▀▀▀█    █▀▀▀█▀▀▀█
-  █    █  █ █   ▄▄▄▄█ █   █   █    █   ▄▄  █ █   █   █    █   █   █
-  █  █ █  █ █       █ █   █   █    █   █████ █   █   █    █       █
-  █  █    █ █   ▀▀▀▀█ █   ▀   █    █   ▀▀  █  ▀▄   ▄▀     █   █   █
-  ▀▄▄▀▄▄▄▄▀ █▄▄▄▄▄▄▄█ ▀▄▄▄▄▄▄▄▀ ██ ▀▄▄▄▄▄▄▄▀    ▀▄▀    ██ █▄▄▄█▄▄▄█
+  ▄▀▀▀▀▄▀▀▄    ▄▀▀▀▀▀▀▀▄ █▀▀▀█▀▀▀█    █▀▀▀█▀▀▀█
+  █    █  █    █   ▄▄  █ █   █   █    █   █   █
+  █  █ █  █    █   █████ █   █   █    █       █
+  █  █    █    █   ▀▀  █  ▀▄   ▄▀     █   █   █
+  ▀▄▄▀▄▄▄▄▀ ██ ▀▄▄▄▄▄▄▄▀    ▀▄▀    ██ █▄▄▄█▄▄▄█
 </pre>
 
 
@@ -49,27 +49,27 @@ These are tested prerequisites, they might be not mandatory:
 
 
 ### Installation
-For end users, it is recommended to grab the file ('neu.cv.h' for C++,
-'neu_cv.py' for Python) and drop it into your project. For contributors,
+For end users, it is recommended to grab the file ('n.cv.h' for C++,
+'n_cv.py' for Python) and drop it into your project. For contributors,
 you may want to clone the entire repository for testing purpose:
 
 ```bash
-git clone https://github.com/Neur1n/neu.cv.h.git
+git clone https://github.com/Neur1n/n.cv.h.git
 ```
 
 
 <!------------------------------------------------------------------- USAGE -->
 ## Usage
-For CMake users, download and put `neu.cv.h` into your project and add a line
+For CMake users, download and put `n.cv.h` into your project and add a line
 to to `INCLUDE_DIRECTORIES()` in your project's main `CMakeLists.txt`:
 
 ```cmake
 INCLUDE_DIRECTORIES(
-  path/to/directory/containing/neu.cv.h
+  path/to/directory/containing/n.cv.h
 )
 ```
 
-Additionally, add some dependency configurations required by `neu.cv.h` to
+Additionally, add some dependency configurations required by `n.cv.h` to
 `CMakeLists.txt` (you may refer to the `test/CMakeLists.txt` in this repository).
 
 

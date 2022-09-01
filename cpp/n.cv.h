@@ -1,6 +1,6 @@
 /******************************************************************************
 Copyright (c) 2022 Jihang Li
-neu.cv.h is licensed under Mulan PSL v2.
+n.cv.h is licensed under Mulan PSL v2.
 You can use this software according to the terms and conditions of the Mulan
 PSL v2.
 You may obtain a copy of Mulan PSL v2 at:
@@ -14,23 +14,23 @@ See the Mulan PSL v2 for more details.
 Last update: 2022-07-21 14:53
 Version: v0.1.1
 ******************************************************************************/
-#ifndef NEU_CV_H
-#define NEU_CV_H
+#ifndef N_CV_H
+#define N_CV_H
 
 #include <cmath>
 
-#if defined(NEUCVH_USE_EIGEN)
+#if defined(NCVH_USE_EIGEN)
 #include "Eigen/Dense"
 #endif
 
-#if defined(NEUCVH_USE_OPENCV)
+#if defined(NCVH_USE_OPENCV)
 #include "opencv2/opencv.hpp"
 #include "opencv2/video/tracking.hpp"
 #endif
 
 
-// From https://github.com/Neur1n/neu.h
-#ifndef NEU_H
+// From https://github.com/Neur1n/n.h
+#ifndef N_H
 #include <time.h>
 
 #if defined(_MSC_VER)
@@ -179,7 +179,7 @@ public:
   virtual void SetTransitionMatrix(const T& A) = 0;
 };  // class NKalmanFilter
 
-#ifdef NEUCVH_USE_EIGEN
+#ifdef NCVH_USE_EIGEN
 template <class T>
 class NKalmanFilterEigen: public NKalmanFilter<Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>>
 {
@@ -251,9 +251,9 @@ private:
   float m_r_scale;
   float m_q_scale;
 };  // class NKalmanFilterEigen
-#endif  // ifdef NEUCVH_USE_EIGEN
+#endif  // ifdef NCVH_USE_EIGEN
 
-#ifdef NEUCVH_USE_OPENCV
+#ifdef NCVH_USE_OPENCV
 class NKalmanFilterOpenCV: public NKalmanFilter<cv::Mat>
 {
 public:
@@ -308,7 +308,7 @@ private:
   float m_r_scale;
   float m_q_scale;
 };  // class NKalmanFilterOpenCV
-#endif  // ifdef NEUCVH_USE_OPENCV
+#endif  // ifdef NCVH_USE_OPENCV
 //}}}
 
 //******************************************** NLowPassFilter Implementation{{{
@@ -589,7 +589,7 @@ void NOneEuroFilter<T>::UpdateAlpha(const T* cutoff, T* alpha)
 //}}}
 
 //********************************************* NKalmanFilter Implementation{{{
-#ifdef NEUCVH_USE_EIGEN
+#ifdef NCVH_USE_EIGEN
 template <class T>
 NKalmanFilterEigen<T>::NKalmanFilterEigen(
     const int& state_dimension, const int& measurement_dimension,
@@ -910,9 +910,9 @@ void NKalmanFilterEigen<T>::MeasurementToState(
 
   state.block(0, 0, mr, mc) = measurement;
 }
-#endif  // ifdef NEUCVH_USE_EIGEN
+#endif  // ifdef NCVH_USE_EIGEN
 
-#ifdef NEUCVH_USE_OPENCV
+#ifdef NCVH_USE_OPENCV
 inline NKalmanFilterOpenCV::NKalmanFilterOpenCV(
     const int& state_dimension, const int& measurement_dimension,
     const int& control_dimension, const float& r_scale, const float& q_scale)
@@ -1071,10 +1071,10 @@ inline void NKalmanFilterOpenCV::MeasurementToState(
 
   measurement.copyTo(state(cv::Rect(0, 0, mc, mr)));
 }
-#endif  // ifdef NEUCVH_USE_OPENCV
+#endif  // ifdef NCVH_USE_OPENCV
 //}}}
 
-#ifndef NEU_H
+#ifndef N_H
 inline double n_duration(
     const struct timespec start, const struct timespec end, const char* unit)
 {
@@ -1108,4 +1108,4 @@ inline double n_duration(
 }
 #endif
 
-#endif  // NEU_CV_H
+#endif  // N_CV_H
